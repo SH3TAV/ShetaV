@@ -6,4 +6,6 @@ tags: [dfir, windows, forensics, threat hunting]
 
 ---
 
+# Introduction 
 
+The
