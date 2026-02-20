@@ -45,7 +45,7 @@ A malicious attachment was downloaded , that started the attack and gained the a
 
 
 
-![](assets\posts\CyberDefendersNetSUP\2.png)
+![](assets/posts/CyberDefendersNetSUP/2.png)
 
 
 
@@ -72,7 +72,7 @@ From the previous log we found the execution of a **.js** file extracted from th
 
 Viewing the contents of the **.js** file that triggered the attack we found that it downloads a PowerShell script and executes it . 
 
-![](assets\posts\CyberDefendersNetSUP\3.png)
+![](assets/posts/CyberDefendersNetSUP/3.png)
 
 > ANSWER : update.ps1
 
@@ -99,7 +99,7 @@ From the previous info we knew that the the zip file and the .js file execution 
 **User="CORP\\danderson"** : Filter for suspected user
 
 
-![](assets\posts\CyberDefendersNetSUP\4.png)
+![](assets/posts/CyberDefendersNetSUP/4.png)
 
 
 We found that this binary has fetched and executed some commands like " **net user /domain** " which used for discovery (see list for all the users registered in the domain) 
@@ -127,7 +127,7 @@ Now , we need to see the network connections done by this binary .
 **table DestinationIp** : make the DestinationIp as a column 
 
 
-![](assets\posts\CyberDefendersNetSUP\5.png)
+![](assets/posts/CyberDefendersNetSUP/5.png)
 
 > ANSWER : 10.10.5.100
 
@@ -146,7 +146,7 @@ Now , we need to get the persistence done by the binary to avoid reboots , the m
 
 **"*netsupport.exe"** : Filter for any existence for the malicious binary 
 
-![](assets\posts\CyberDefendersNetSUP\6.png)
+![](assets/posts/CyberDefendersNetSUP/6.png)
 
 
 We found only one existence for the malicious binary that he added a **RUN** key to run every system reboot . 
@@ -162,7 +162,7 @@ Now , we neet to find any instances where the **ssh.exe** executable was launche
 
 ```index=main EventCode=1 *ssh.exe* | table CommandLine ParentCommandLine``` 
 
-![](assets\posts\CyberDefendersNetSUP\7.png)
+![](assets/posts/CyberDefendersNetSUP/7.png)
 
 We found 1 existence for **ssh.exe** which reveals the command used by the attacker .
 
@@ -187,7 +187,7 @@ Now , we need to search in  the **Security** Logs for evidence of a new local us
 
 ```index="main" EventCode="4720" SubjectUserName="danderson" | table SamAccountName```
 
-![](assets\posts\CyberDefendersNetSUP\8.png)
+![](assets/posts/CyberDefendersNetSUP/8.png)
 
 
 --> **EventCode="4720"** : reveals the local account creation 
@@ -198,7 +198,7 @@ After Investigating , we found that there is only one account created **"WDAGUti
 
 Now , After reviewing the commands done by the malicious binary 
 
-![](assets\posts\CyberDefendersNetSUP\9.png)
+![](assets/posts/CyberDefendersNetSUP/9.png)
 
 We found this command ```net user WDAGUtilityAccount2 Decryptme1488@ /add``` which he added the account with the password **Decryptme1488@** 
 
@@ -212,7 +212,7 @@ We found this command ```net user WDAGUtilityAccount2 Decryptme1488@ /add``` whi
 
 Before the creation of this account , we find that the attacker was querying the active directory to find details about **ServiceAdmin** account throught this command ```net user ServiceAdmin /domain``` and then he used this command ```cmdkey /add:DC01 /user:CORPServiceAdmin /pass:FakePass123!``` which creates or updates a stored credential in the Windows Credential Manager for the target DC01, using the username **CORP\ServiceAdmin** and the password **FakePass123!**
 
-![](assets\posts\CyberDefendersNetSUP\10.png)
+![](assets/posts/CyberDefendersNetSUP/10.png)
 
 
 > ANSWER : ServiceAdmin
@@ -234,7 +234,7 @@ To accurately track any modifications made to the configuration of **Windows Def
 
 **New_Value=*Exclusions** : To search for any exclusions path 
 
-![](assets\posts\CyberDefendersNetSUP\11.png)
+![](assets/posts/CyberDefendersNetSUP/11.png)
 
 This reveals that the attacker excluded the directory **C:\Users\Public** from its real-time protection and scanning routines 
 
@@ -244,7 +244,7 @@ This reveals that the attacker excluded the directory **C:\Users\Public** from i
 
 We need to check PowerShell execution history, as this is the primary method for attackers to tamper with Windows Defender settings , after checking the commands done by the malicious program i found the disabled feature 
 
-![](assets\posts\CyberDefendersNetSUP\12.png)
+![](assets/posts/CyberDefendersNetSUP/12.png)
 
 > ANSWER : DisableBehaviorMonitoring
 
@@ -256,7 +256,7 @@ We need to check PowerShell execution history, as this is the primary method for
 
 Following the attacker's spawned processes tracked by **Sysmon Event ID 1** , i found this suspicious command
 
-![](assets\posts\CyberDefendersNetSUP\13.png)
+![](assets/posts/CyberDefendersNetSUP/13.png)
 
 > Command Analysis : 
 
@@ -289,7 +289,7 @@ To identify the time when the attacker dumped password hashes from the compromis
 
 **table SourceImage** : Making a column for the the accessing processes 
 
-![](assets\posts\CyberDefendersNetSUP\14.png)
+![](assets/posts/CyberDefendersNetSUP/14.png)
 
 After investigating , we found that the malicious program have access **lsass.exe** at **2025-07-17 21:36:24** 
 
@@ -310,7 +310,7 @@ Now we need to search for any signs of **ntds**
 
 ```index=main EventCode=1 "ntds" | table CommandLine ParentCommandLine```
 
-![](assets\posts\CyberDefendersNetSUP\15.png)
+![](assets/posts/CyberDefendersNetSUP/15.png)
 
 We found this command **C:\Windows\system32\ntdsutil.exe" "ac i ntds" ifm "create full c:\ProgramData\ntdsutil" q q**  --> the attacker abused ntdsutil.exe, a legitimate built-in administrative tool,generating a full dump of the Active Directory database at the following location: C:\ProgramData\ntdsutil . 
 
@@ -323,7 +323,7 @@ We found this command **C:\Windows\system32\ntdsutil.exe" "ac i ntds" ifm "creat
 
 Now we should investigate for any commands used by the attacker to compress, archive, or package the dumped data , while reviewing the commands around this time we found this command 
 
-![](assets\posts\CyberDefendersNetSUP\16.png)
+![](assets/posts/CyberDefendersNetSUP/16.png)
 
 
 This PowerShell command uses the Compress-Archive cmdlet to compress the extracted NTDS (Active Directory database) dump file. It packages the sensitive data into a ZIP archive named **Data_backup_20250716.zip**
